@@ -54,8 +54,8 @@ from accelerate.utils import set_seed
 set_seed(0)
 accelerator = Accelerator(mixed_precision='bf16',
                           gradient_accumulation_steps=train_config["gradient_accumulation_steps"])
-from model.cnets import Model
-from model.configs import EConfig
+from model.cnets_mistral import EagleMistralModel
+# from model.configs import EConfig
 from typing import Any, Dict, List
 
 from torch import nn, optim
@@ -319,8 +319,10 @@ if accelerator.is_main_process:
     if not os.path.exists(args.cpdir):
         os.makedirs(args.cpdir)
 
-config = EConfig.from_pretrained(train_config["config_path"])
-model = Model(config, load_emb=True, path=args.basepath)
+# config = EConfig.from_pretrained(train_config["config_path"])
+# model = Model(config, load_emb=True, path=args.basepath)
+config = AutoConfig.from_pretrained(train_config["config_path"])
+model = EagleMistralModel(config, load_emb=True, path=args.basepath)
 
 criterion = nn.SmoothL1Loss(reduction="none")
 optimizer = optim.AdamW(model.parameters(), lr=train_config["lr"], betas=(train_config["b1"], train_config["b2"]))

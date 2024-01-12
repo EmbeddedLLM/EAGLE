@@ -108,6 +108,8 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids):
     q_embed = (q * cos) + (rotate_half(q) * sin)
     k_embed = (k * cos) + (rotate_half(k) * sin)
     return q_embed, k_embed
+
+
 class LlamaRotaryEmbedding(torch.nn.Module):
     def __init__(self, dim, max_position_embeddings=2048, base=10000, device=None):
         super().__init__()
@@ -452,11 +454,8 @@ def len_list(x,n):
     return [i for i in x if len(i)<=n]
 
 class Model(nn.Module):
-    def __init__(self,config,load_emb=False,path=None):
+    def __init__(self,config,load_emb=False, path=None):
         super().__init__()
-
-
-
 
         self.gradient_checkpointing = True
         self.padding_idx = config.pad_token_id

@@ -3,15 +3,16 @@ import copy
 import torch
 import torch.nn as nn
 from transformers import PreTrainedModel, PretrainedConfig
-from .modeling_llama_kv import LlamaForCausalLM as KVLlamaForCausalLM
+from .modeling_mistral_kv import MistralForCausalLM as KVMistralForCausalLM
 from .utils import *
 from .kv_cache import initialize_past_key_values
 from .choices import mc_sim_7b_63
 from transformers import AutoTokenizer
 import os
 from huggingface_hub import hf_hub_download
-from .cnets import Model
-from .configs import EConfig
+from .cnets_mistral import Model
+# from .configs import EConfig
+from transformers import AutoConfig
 from huggingface_hub import hf_hub_download
 from safetensors.torch import load, load_file
 
@@ -63,7 +64,8 @@ class EaModel(nn.Module):
         self.vocab_size = base_model.lm_head.weight.shape[0]
         self.base_model_name_or_path = base_model_name_or_path
         self.tokenizer = AutoTokenizer.from_pretrained(self.base_model_name_or_path)
-        config = EConfig.from_pretrained(ea_model_path)
+        # config = EConfig.from_pretrained(ea_model_path)
+        config = AutoConfig.from_pretrained(ea_model_path)
         self.ea_layer = Model(config)
 
         low_memory=False
@@ -100,7 +102,7 @@ class EaModel(nn.Module):
             **kwargs,
     ):
 
-        base_model = KVLlamaForCausalLM.from_pretrained(
+        base_model = KVMistralForCausalLM.from_pretrained(
             base_model_path, **kwargs
         )
 

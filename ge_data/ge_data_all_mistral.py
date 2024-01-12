@@ -20,7 +20,7 @@ import json
 from fastchat.model.model_adapter import get_conversation_template
 
 # bigname="vicunav13/13B"
-bigname="/media/data3/Storage/lmsys_vicuna-7b-v1.3"
+bigname="/media/data3/Storage/mistralai_Mistral-7B-v0.1"
 # bigname = "/home/lyh/weights/hf/llama/7B/"
 # smallname = "/home/lyh/weights/hf/llama/7B/"
 
@@ -66,7 +66,7 @@ def build_dataset_rank(
             "loss_mask": []
         }
         for i in range(len(examples['id'])):
-            conv = get_conversation_template("vicuna")
+            conv = get_conversation_template("mistral")
             roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
             source= examples['conversations'][i]
             if roles[source[0]["from"]] != conv.roles[0]:
@@ -78,6 +78,8 @@ def build_dataset_rank(
                 assert role == conv.roles[j % 2], f"{i}"
                 conv.append_message(role, sentence["value"])
             conversation=conv.get_prompt()
+
+            # print(conversation)
             # if i==56:
             #     print(i)
             # if i==57:
@@ -93,7 +95,7 @@ def build_dataset_rank(
 
             sep = conv.sep + conv.roles[1] + ": "
 
-            total_len = int(input_ids.ne(tokenizer.pad_token_id).sum())
+            # total_len = int(input_ids.ne(tokenizer.pad_token_id).sum())
 
             turns = conversation.split(conv.sep2)
             cur_len = 1
