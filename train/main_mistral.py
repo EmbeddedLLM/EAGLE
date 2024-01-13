@@ -4,8 +4,8 @@ parser = argparse.ArgumentParser(description='sp')
 parser.add_argument('--basepath', type=str, default='/home/lyh/weights/hf/vicuna_v13/7B/')
 parser.add_argument('--configpath', type=str, default="config.json")
 parser.add_argument('--lr', type=float, default=3e-5)
-parser.add_argument('--bs', type=int, default=4)
-parser.add_argument('--gradient-accumulation-steps', type=int, default=8)
+parser.add_argument('--bs', type=int, default=1)
+parser.add_argument('--gradient-accumulation-steps', type=int, default=1)
 parser.add_argument('--tmpdir', type=str, default='0')
 parser.add_argument('--outdir', type=str, default='0')
 parser.add_argument('--cpdir', type=str, default='0')
@@ -24,7 +24,7 @@ train_config = {
     "p_w": 0.1,
     "v_w": 1.0,
     "head_w": 0.1,
-    "num_workers": 2,
+    "num_workers": 1,
     "embeding": True,
     "act": "No",
     "data_noise": True,

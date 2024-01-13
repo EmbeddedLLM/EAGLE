@@ -20,7 +20,7 @@ import json
 from fastchat.model.model_adapter import get_conversation_template
 
 # bigname="vicunav13/13B"
-bigname="/media/data3/Storage/mistralai_Mistral-7B-v0.1"
+bigname="/media/data3/Storage/mistralai_Mistral-7B-Instruct-v0.2"
 # bigname = "/home/lyh/weights/hf/llama/7B/"
 # smallname = "/home/lyh/weights/hf/llama/7B/"
 

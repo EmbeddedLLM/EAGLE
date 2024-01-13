@@ -17,6 +17,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# Transformers >= 4.36
 """ PyTorch Mistral model."""
 import copy
 import os
@@ -62,11 +63,11 @@ if is_flash_attn_2_available():
 from loguru import logger
 
 try:
-    # from .configs import EConfig
+    from .configs import MistralConfig
     from .utils_c import *
     from .choices import *
 except:
-    # from configs import EConfig
+    from configs import MistralConfig
     from utils_c import *
     from choices import *
     from utils import prepare_logits_processor
@@ -792,6 +793,28 @@ class MistralDecoderLayer(nn.Module):
 
         return outputs
 
+
+class MistralPreTrainedModel(PreTrainedModel):
+    config_class = MistralConfig
+    base_model_prefix = "model"
+    supports_gradient_checkpointing = True
+    _no_split_modules = ["MistralDecoderLayer"]
+    _skip_keys_device_placement = "past_key_values"
+    _supports_flash_attn_2 = True
+    _supports_sdpa = True
+    _supports_cache_class = True
+
+    def _init_weights(self, module):
+        std = self.config.initializer_range
+        if isinstance(module, nn.Linear):
+            module.weight.data.normal_(mean=0.0, std=std)
+            if module.bias is not None:
+                module.bias.data.zero_()
+        elif isinstance(module, nn.Embedding):
+            module.weight.data.normal_(mean=0.0, std=std)
+            if module.padding_idx is not None:
+                module.weight.data[module.padding_idx].zero_()
+
 class I(nn.Module):
     def __init__(self):
         super().__init__()
@@ -804,7 +827,7 @@ def len_list(x,n):
 
 
 
-class EagleMistralModel(nn.Module):
+class EagleMistralModel(MistralPreTrainedModel):
     """
     Transformer decoder consisting of *config.num_hidden_layers* layers. Each layer is a [`MistralDecoderLayer`]
 
@@ -813,10 +836,13 @@ class EagleMistralModel(nn.Module):
     """
 
     def __init__(self, config, load_emb=False, path=None):
-        super().__init__()
+        super().__init__(config)
+        self.config = config
         self.padding_idx = config.pad_token_id
         self.vocab_size = config.vocab_size
 
+        self.gradient_checkpointing = True
+        self._attn_implementation = config._attn_implementation
         self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size, self.padding_idx)
         if load_emb:
             from safetensors import safe_open
@@ -846,6 +872,7 @@ class EagleMistralModel(nn.Module):
         self.act=ACT2FN[config.hidden_act]
         for param in self.embed_tokens.parameters():
             param.requires_grad = False
+        self.gradient_checkpointing_enable()
 
 
     def init_tree(self):
@@ -946,6 +973,22 @@ class EagleMistralModel(nn.Module):
                     output_attentions,
                     use_cache,
                 )
+                # def create_custom_forward(module):
+                #     def custom_forward(*inputs):
+                #         # None for past_key_value
+                #         return module(*inputs, past_key_values, output_attentions)
+
+                #     return custom_forward
+
+                # layer_outputs = torch.utils.checkpoint.checkpoint(
+                #     decoder_layer.__call__,
+                #     hidden_states,
+                #     attention_mask,
+                #     position_ids,
+                #     past_key_values,
+                #     output_attentions,
+                #     use_cache,
+                # )
             else:
                 layer_outputs = decoder_layer(
                     hidden_states,
