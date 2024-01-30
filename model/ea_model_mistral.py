@@ -137,7 +137,7 @@ class EaModel(nn.Module):
             logits_processor=None
     ):
 
-        with torch.inference_mode():
+        with torch.inference_mode(mode=True):
             # Pass input through the base model
             outputs = self.base_model.model(
                 input_ids=input_ids,
